@@ -88,6 +88,10 @@ namespace Groupic
                 GetPrivateProfileString("OPTION", "SeperateRawFile", "0", optionVal, 16, iniPath);
                 if ("1" == optionVal.ToString())
                     chkSepertateRawFile.Checked = true;
+
+                GetPrivateProfileString("OPTION", "ChangeFileName", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkChangeFileName.Checked = true;
             }
             
             SetPreviewFolderPath();
@@ -111,12 +115,11 @@ namespace Groupic
                 return;
             }
 
-            String folderName;
-            String filePath;
-            DirectoryInfo directory;
+            DirectoryInfo destDirectory;
             FileInfo fileInfo;
-            String targetFile;
-            StringBuilder targetPath;
+
+            String sourceFilePath;
+            String destFilePath;
             bool isDoneWork = false;
             int skipCnt = 0;
             FormOverwriteDlg overwriteDlg = new FormOverwriteDlg();
@@ -128,76 +131,90 @@ namespace Groupic
                 if (true == item.SubItems[1].Text.Equals("O"))
                     continue;
 
-                filePath = item.SubItems[2].Text;
-                fileInfo = new FileInfo(filePath);
+                sourceFilePath = item.SubItems[2].Text;
+                fileInfo = new FileInfo(sourceFilePath);
 
                 if (false == fileInfo.Exists)
                 {
                     continue;
                 }
 
-                // 파일 생성날짜를 가져온다. (폴더명으로 쓰기 위함)
-                folderName = item.SubItems[3].Text;
 
-                // 사진을 월단위로 분류 한다.
-                if (true == chkCategoryByMonth.Checked)
-                    folderName = folderName.Substring(0, 7);
-
-                // 옵션에 따라 날짜형식에 "-"를 포함하지 않는다.
-                if (false == chkUseDash.Checked)
-                    folderName = folderName.Replace("-", "");
-
-                // 옵션에 따라 날짜 형식을 4자리 또는 2자리로 사용한다.
-                if (false == chkDateFormat.Checked)
-                    folderName = folderName.Substring(2);
-
-                targetPath = new StringBuilder(fileInfo.DirectoryName);
-                if (true == chkMakeRoot.Checked)
-                    targetPath.Append("\\Category");
-
-                targetPath.Append("\\");
-                targetPath.Append(folderName);
-
-                if (true == chkSepertateRawFile.Checked)
                 {
-                    if (true == rawFileList.IsContain(fileInfo.Extension))
-                        targetPath.Append("\\Raw");
-                }
+                    StringBuilder destDirectoryName = new StringBuilder(fileInfo.DirectoryName);
+                    if (true == chkMakeRoot.Checked)
+                        destDirectoryName.Append("\\Category");
 
-                directory = new DirectoryInfo(targetPath.ToString());
+                    destDirectoryName.Append("\\");
 
-                // 대상 디렉토리가 존재하지 않는 경우에는 생성한다.
-                if (false == directory.Exists)
-                {
-                    directory.Create();
+
+                    String destFolderName;
+
+                    // 파일 생성날짜를 가져온다. (폴더명으로 쓰기 위함)
+                    destFolderName = item.SubItems[3].Text;
+
+                    // 사진을 월단위로 분류 한다.
+                    if (true == chkCategoryByMonth.Checked)
+                        destFolderName = destFolderName.Substring(0, 7);
+
+                    // 옵션에 따라 날짜형식에 "-"를 포함하지 않는다.
+                    if (false == chkUseDash.Checked)
+                        destFolderName = destFolderName.Replace("-", "");
+
+                    // 옵션에 따라 날짜 형식을 4자리 또는 2자리로 사용한다.
+                    if (false == chkDateFormat.Checked)
+                        destFolderName = destFolderName.Substring(2);
+
+                    destDirectoryName.Append(destFolderName);
+
+
+                    if (true == chkSepertateRawFile.Checked)
+                    {
+                        if (true == rawFileList.IsContain(fileInfo.Extension))
+                            destDirectoryName.Append("\\Raw");
+                    }
+
+                    destDirectory = new DirectoryInfo(destDirectoryName.ToString());
+
+
+                    // 대상 디렉토리가 존재하지 않는 경우에는 생성한다.
+                    if (false == destDirectory.Exists)
+                    {
+                        destDirectory.Create();
+                    }
                 }
 
                 // 대상 파일 경로를 생성.
-                targetFile = directory.ToString() + "\\" + fileInfo.Name;
+                if (true == chkChangeFileName.Checked)
+                    destFilePath = destDirectory.ToString() + "\\" + GetExifDateFileName(sourceFilePath);
+                else
+                    destFilePath = destDirectory.ToString() + "\\" + fileInfo.Name;
+
+                destFilePath = destFilePath.Replace("\\\\", "\\");
 
                 // 대상 경로에 동일한 파일이 존재하면 덮어쓰기 다이얼로그를 띄운다.
-                if (true == File.Exists(targetFile))
+                if (true == File.Exists(destFilePath))
                 {
                     OverwriteResult overWriteResult = OverwriteResult.Cancel;
-                    overWriteResult = overwriteDlg.ShowOverwriteDialog(targetFile);
+                    overWriteResult = overwriteDlg.ShowOverwriteDialog(sourceFilePath, destFilePath);
 
                     switch(overWriteResult)
                     {
                         case OverwriteResult.Overwrite: // 덮어쓰기
-                            File.Delete(targetFile);
+                            File.Delete(destFilePath);
                             break;
                         case OverwriteResult.NotMove: // 이동 안 함
                             skipCnt++;
                             continue;
                         case OverwriteResult.Rename: // 이름변경하여 이동
-                            targetFile = GetNewTargetName(targetFile);
+                            destFilePath = GPUtil.GetNewTargetName(destFilePath);
                             break;
                         case OverwriteResult.Cancel: //취소
                             return;
                     }
                 }
-
-                fileInfo.MoveTo(targetFile);
+                
+                File.Move(sourceFilePath, destFilePath);
                 isDoneWork = true;
                 item.ForeColor = Color.LightGray;
                 item.SubItems[1].Text = "O"; // 영문자 O 이다. 숫자 0 아님
@@ -277,6 +294,13 @@ namespace Groupic
         private void chkSepertateRawFile_CheckedChanged(object sender, EventArgs e)
         {
             WritePrivateProfileString("OPTION", "SeperateRawFile", (chkSepertateRawFile.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkChangeFileName_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "ChangeFileName", (chkChangeFileName.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
         }
 
         private void toolStripAbout_Click(object sender, EventArgs e)
@@ -293,21 +317,24 @@ namespace Groupic
 
 
         #region Methods
-        private String GetNewTargetName(String targetFile)
+        private String GetExifDateFileName(string filePath)
         {
-            String path = Path.GetDirectoryName(targetFile);
-            String fileName = Path.GetFileNameWithoutExtension(targetFile);
-            String ext = Path.GetExtension(targetFile);
-            String newFilePath;
+            String dateTime = GetExifDate(filePath);
+            FileInfo fi = new FileInfo(filePath);
 
-            while (true)
+            if (true == String.IsNullOrEmpty(dateTime)) // Exif 정보가 없는 경우
             {
-                fileName += " copy";
-                newFilePath = path + "\\" + fileName + ext;
-
-                if (false == File.Exists(newFilePath))
-                    return newFilePath;
+                // 마지막 수정일을 파일명으로 사용
+                dateTime = fi.LastWriteTime.ToString("yyyy-mm-dd__HH-mm-ss");
             }
+            else // Exif 정보 있음
+            {
+                dateTime = dateTime.Replace(" ", "__");
+            }
+
+            dateTime += fi.Extension;
+
+            return dateTime.Trim();
         }
 
         private void SetExifExtention(List<string> extList)
@@ -345,7 +372,6 @@ namespace Groupic
         private void DragDropThreadFunc(DragEventArgs e)
         {
             String[] files;
-            DirectoryInfo directory;
             files = (String[])e.Data.GetData(DataFormats.FileDrop);
 
             foreach (String file in files)
@@ -410,27 +436,13 @@ namespace Groupic
             // Exif 지원 확장자인 경우 Exif에서 생성된 날짜를 읽어온다.
             if (true == IsExifSupportExtension(path))
             {
-                String strDate = String.Empty;
+                 String exifDate = GetExifDate(path);
 
-                try
+                if (false == String.IsNullOrEmpty(exifDate))
                 {
-                    ExifReader exifData = new ExifReader(path);
-                    exifData.GetTagValue(ExifTags.DateTimeOriginal, out strDate);
-                    exifData.Dispose(); // Close file
+                    exifDate = exifDate.Substring(0, 10);
+                    fileCreationTime = exifDate;
                 }
-                catch (ExifLibException ex)
-                {
-                    // Do Nothing
-                    //MessageBox.Show(ex.ToString());
-                }
-
-                if (false == String.IsNullOrEmpty(strDate))
-                {
-                    fileCreationTime = strDate;
-                    fileCreationTime = fileCreationTime.Replace(":", "-");
-                    fileCreationTime = fileCreationTime.Substring(0, 10);
-                }
-
             }
 
             lvi.SubItems.Add(fileCreationTime); // 생성 날짜
@@ -438,14 +450,44 @@ namespace Groupic
             long fileSize = fileInfo.Length;
             // 파일 크기
             if (0 == fileSize)
-                lvi.SubItems.Add("0KB");
+                lvi.SubItems.Add("0 KB");
             else if (1024 > fileSize)
-                lvi.SubItems.Add("1KB");
+                lvi.SubItems.Add("1 KB");
+            else if (1048576 > fileSize)
+                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1024)) + " KB");
             else
-                lvi.SubItems.Add(String.Format("{0:#,###}", (long)(fileSize / 1024)) + "KB");
+                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1024 / 1024)) + " MB");
 
             listView.Items.Add(lvi);
             return true;
+        }
+
+        private String GetExifDate(string path)
+        {
+            String strDate;
+
+            try
+            {
+                ExifReader exifData = new ExifReader(path);
+                exifData.GetTagValue(ExifTags.DateTimeOriginal, out strDate);
+                exifData.Dispose(); // Close file
+            }
+            catch (ExifLibException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return String.Empty;
+            }
+            catch(FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return String.Empty;
+            }
+
+            if (null == strDate || String.Empty == strDate)
+                return String.Empty;
+
+            strDate = strDate.Replace(":", "-");
+            return strDate;
         }
 
         private bool IsExifSupportExtension(string path)
@@ -471,7 +513,12 @@ namespace Groupic
 
         private void SetPreviewFolderPath()
         {
-            String strPreview = "";
+            lbRawPreview.Visible = false;
+
+            if (true == chkSepertateRawFile.Checked)
+                lbRawPreview.Visible = true;
+
+            String strPreview = "./";
             String strDate = DateTime.Now.ToString("yyyy-MM-dd");
 
             if (true == chkCategoryByMonth.Checked) // 월별 분류
@@ -491,11 +538,23 @@ namespace Groupic
 
             if (true == chkMakeRoot.Checked)
             {
-                strPreview = "Category\\";
+                strPreview += "Category/";
             }
-            strPreview = strPreview + strDate;
-            
-            lblPreviewDateFormat.Text = "(미리보기 : " + strPreview + ")";
+
+            strPreview += strDate;
+
+            String strJpgPreview = "[  JPG  ]  " + strPreview;
+            String strRawPreview = "[  RAW  ]  " + strPreview + "/RAW";
+
+            if (true == chkChangeFileName.Checked)
+            {
+                String strFileFormat = DateTime.Now.ToString("yyyy-MM-dd__hh-mm-ss");
+                strJpgPreview += "/" + strFileFormat + ".jpg";
+                strRawPreview += "/" + strFileFormat + ".raw";
+            }
+
+            lbJpegPreview.Text = strJpgPreview;
+            lbRawPreview.Text = strRawPreview;
         }
         #endregion
     }

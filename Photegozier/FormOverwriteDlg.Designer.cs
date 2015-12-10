@@ -34,8 +34,9 @@
             this.btnOverwrite = new System.Windows.Forms.Button();
             this.btnNotMove = new System.Windows.Forms.Button();
             this.btnMoveRename = new System.Windows.Forms.Button();
-            this.lblTargetFile = new System.Windows.Forms.Label();
-            this.lblFileName = new System.Windows.Forms.Label();
+            this.lblSourceFile = new System.Windows.Forms.Label();
+            this.lblTargetName = new System.Windows.Forms.Label();
+            this.lblNewName = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // label1
@@ -50,7 +51,7 @@
             // chkApplyToAll
             // 
             this.chkApplyToAll.AutoSize = true;
-            this.chkApplyToAll.Location = new System.Drawing.Point(14, 168);
+            this.chkApplyToAll.Location = new System.Drawing.Point(14, 186);
             this.chkApplyToAll.Name = "chkApplyToAll";
             this.chkApplyToAll.Size = new System.Drawing.Size(116, 16);
             this.chkApplyToAll.TabIndex = 4;
@@ -60,7 +61,7 @@
             // btnOverwrite
             // 
             this.btnOverwrite.BackColor = System.Drawing.Color.Transparent;
-            this.btnOverwrite.Location = new System.Drawing.Point(13, 99);
+            this.btnOverwrite.Location = new System.Drawing.Point(17, 120);
             this.btnOverwrite.Name = "btnOverwrite";
             this.btnOverwrite.Size = new System.Drawing.Size(160, 50);
             this.btnOverwrite.TabIndex = 1;
@@ -70,7 +71,7 @@
             // 
             // btnNotMove
             // 
-            this.btnNotMove.Location = new System.Drawing.Point(179, 99);
+            this.btnNotMove.Location = new System.Drawing.Point(211, 120);
             this.btnNotMove.Name = "btnNotMove";
             this.btnNotMove.Size = new System.Drawing.Size(160, 50);
             this.btnNotMove.TabIndex = 2;
@@ -80,7 +81,7 @@
             // 
             // btnMoveRename
             // 
-            this.btnMoveRename.Location = new System.Drawing.Point(345, 99);
+            this.btnMoveRename.Location = new System.Drawing.Point(396, 120);
             this.btnMoveRename.Name = "btnMoveRename";
             this.btnMoveRename.Size = new System.Drawing.Size(160, 50);
             this.btnMoveRename.TabIndex = 3;
@@ -88,32 +89,42 @@
             this.btnMoveRename.UseVisualStyleBackColor = true;
             this.btnMoveRename.Click += new System.EventHandler(this.btnMoveRename_Click);
             // 
-            // lblTargetFile
+            // lblSourceFile
             // 
-            this.lblTargetFile.AutoSize = true;
-            this.lblTargetFile.Location = new System.Drawing.Point(20, 41);
-            this.lblTargetFile.Name = "lblTargetFile";
-            this.lblTargetFile.Size = new System.Drawing.Size(65, 12);
-            this.lblTargetFile.TabIndex = 5;
-            this.lblTargetFile.Text = "대상 경로 :";
+            this.lblSourceFile.AutoSize = true;
+            this.lblSourceFile.Location = new System.Drawing.Point(46, 41);
+            this.lblSourceFile.Name = "lblSourceFile";
+            this.lblSourceFile.Size = new System.Drawing.Size(65, 12);
+            this.lblSourceFile.TabIndex = 5;
+            this.lblSourceFile.Text = "기존 파일 :";
             // 
-            // lblFileName
+            // lblTargetName
             // 
-            this.lblFileName.AutoSize = true;
-            this.lblFileName.Location = new System.Drawing.Point(20, 62);
-            this.lblFileName.Name = "lblFileName";
-            this.lblFileName.Size = new System.Drawing.Size(53, 12);
-            this.lblFileName.TabIndex = 6;
-            this.lblFileName.Text = "파일명 : ";
+            this.lblTargetName.AutoSize = true;
+            this.lblTargetName.Location = new System.Drawing.Point(29, 63);
+            this.lblTargetName.Name = "lblTargetName";
+            this.lblTargetName.Size = new System.Drawing.Size(85, 12);
+            this.lblTargetName.TabIndex = 6;
+            this.lblTargetName.Text = "이동 할 파일 : ";
+            // 
+            // lblNewName
+            // 
+            this.lblNewName.AutoSize = true;
+            this.lblNewName.Location = new System.Drawing.Point(20, 94);
+            this.lblNewName.Name = "lblNewName";
+            this.lblNewName.Size = new System.Drawing.Size(93, 12);
+            this.lblNewName.TabIndex = 7;
+            this.lblNewName.Text = "변경될 파일명 : ";
             // 
             // FormOverwriteDlg
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
-            this.ClientSize = new System.Drawing.Size(521, 200);
-            this.Controls.Add(this.lblFileName);
-            this.Controls.Add(this.lblTargetFile);
+            this.ClientSize = new System.Drawing.Size(859, 212);
+            this.Controls.Add(this.lblNewName);
+            this.Controls.Add(this.lblTargetName);
+            this.Controls.Add(this.lblSourceFile);
             this.Controls.Add(this.btnMoveRename);
             this.Controls.Add(this.btnNotMove);
             this.Controls.Add(this.btnOverwrite);
@@ -138,7 +149,8 @@
         private System.Windows.Forms.Button btnOverwrite;
         private System.Windows.Forms.Button btnNotMove;
         private System.Windows.Forms.Button btnMoveRename;
-        private System.Windows.Forms.Label lblTargetFile;
-        private System.Windows.Forms.Label lblFileName;
+        private System.Windows.Forms.Label lblSourceFile;
+        private System.Windows.Forms.Label lblTargetName;
+        private System.Windows.Forms.Label lblNewName;
     }
 }

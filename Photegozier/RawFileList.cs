@@ -57,6 +57,7 @@ namespace Groupic
             list.Add(".fff");
             list.Add(".pxn");
             list.Add(".bay");
+            list.Add(".xmp");
         }
     }
 }

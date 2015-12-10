@@ -14,7 +14,7 @@ namespace Groupic
 
     public partial class FormOverwriteDlg : Form
     {
-        private string targetFile;
+        private string destFile;
 
         OverwriteResult lastResult = OverwriteResult.Cancel;
         OverwriteResult result = OverwriteResult.Cancel;
@@ -24,11 +24,12 @@ namespace Groupic
             InitializeComponent();
         }
 
-        public OverwriteResult ShowOverwriteDialog(String filePath)
+        public OverwriteResult ShowOverwriteDialog(String sourceFile, String destFile)
         {
-            this.targetFile = filePath;
-            this.lblTargetFile.Text = "대상 경로 : " + filePath;
-            this.lblFileName.Text = "파일명 : " + Path.GetFileName(filePath);
+            this.destFile = destFile;
+            this.lblSourceFile.Text = String.Format("{0}{1}", "기존 파일 : ",sourceFile);
+            this.lblTargetName.Text = String.Format("{0}{1}", "이동 할 파일 : ", destFile);
+            this.lblNewName.Text = String.Format("{0}{1}", "변경 될 파일명 : ", GPUtil.GetNewTargetName(destFile));
             return ShowOverwriteDialog();
         }
 
