@@ -548,7 +548,7 @@ namespace Groupic
 
             if (true == chkChangeFileName.Checked)
             {
-                String strFileFormat = DateTime.Now.ToString("yyyy-MM-dd__hh-mm-ss");
+                String strFileFormat = DateTime.Now.ToString("yyyy-MM-dd__HH-mm-ss");
                 strJpgPreview += "/" + strFileFormat + ".jpg";
                 strRawPreview += "/" + strFileFormat + ".raw";
             }
