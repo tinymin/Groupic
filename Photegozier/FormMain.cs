@@ -35,21 +35,33 @@ namespace Groupic
             String val,
             String filePath);
         #endregion
+        
+
+
+
 
 
         #region Data
         private String iniPath = ".\\setting.ini";
         private List<String> exifExtentionList = new List<String>();
         #endregion
+        
+
+
+
 
 
         #region Constructor
         public Groupic()
         {
             InitializeComponent();
-            SetExifExtention(exifExtentionList);
+            GenerateExifExtention(exifExtentionList);
         }
         #endregion
+        
+
+
+
 
 
         #region EventHandler
@@ -61,38 +73,8 @@ namespace Groupic
             fileListView.GridLines = true;
             fileListView.AllowDrop = true;
 
-            StringBuilder optionVal = new StringBuilder();
-
-            if (true == new FileInfo(iniPath).Exists)
-            {
-                GetPrivateProfileString("OPTION", "DateFormat", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkDateFormat.Checked = true;
-
-                GetPrivateProfileString("OPTION", "MakeRoot", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkMakeRoot.Checked = true;
-
-                GetPrivateProfileString("OPTION", "UseDash", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkUseDash.Checked = true;
-
-                GetPrivateProfileString("OPTION", "CategoryByMonth", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkCategoryByMonth.Checked = true;
-
-                GetPrivateProfileString("OPTION", "AutoDeleteDoneItem", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkAutoDeleteDoneItem.Checked = true;
-
-                GetPrivateProfileString("OPTION", "SeperateRawFile", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkSepertateRawFile.Checked = true;
-
-                GetPrivateProfileString("OPTION", "ChangeFileName", "0", optionVal, 16, iniPath);
-                if ("1" == optionVal.ToString())
-                    chkChangeFileName.Checked = true;
-            }
+            // INI에서 옵션 로드
+            LoadINIOption(iniPath);
             
             SetPreviewFolderPath();
         }
@@ -109,6 +91,171 @@ namespace Groupic
 
         private void btnCategorizing_Click(object sender, EventArgs e)
         {
+            DoCategories();
+        }
+
+        private void btnDeleteAllFileList_Click(object sender, EventArgs e)
+        {
+            fileListView.Items.Clear();
+        }
+
+        private void btnDeleteSelectedFileList_Click(object sender, EventArgs e)
+        {
+            DeleteSelectedFileList(fileListView);
+        }
+
+        private void btnDeleteDoneItem_Click(object sender, EventArgs e)
+        {
+            DeleteDoneItems(fileListView);
+        }
+
+        private void toolStripAbout_Click(object sender, EventArgs e)
+        {
+            FormAbout dlgAbout = new FormAbout();
+            dlgAbout.ShowDialog();
+        }
+
+        private void toolStripQuit_Click(object sender, EventArgs e)
+        {
+            this.Dispose();
+        }
+        #endregion
+        
+        
+        
+        
+        
+        
+        #region EventHandlerForOption
+        private void chkDateFormat_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "DateFormat", (chkDateFormat.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkMakeRoot_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "MakeRoot", (chkMakeRoot.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkUseDash_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "UseDash", (chkUseDash.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkCategoryByMonth_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "CategoryByMonth", (chkCategoryByMonth.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkAutoDeleteDoneItem_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "AutoDeleteDoneItem", (chkAutoDeleteDoneItem.Checked == true ? 1 : 0).ToString(), iniPath);
+        }
+
+        private void chkSepertateRawFile_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "SeperateRawFile", (chkSepertateRawFile.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkChangeFileName_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "ChangeFileName", (chkChangeFileName.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+
+        private void chkDelRawIfJpgNotExist_CheckedChanged(object sender, EventArgs e)
+        {
+            WritePrivateProfileString("OPTION", "DeleteRawIfJpgNotExist", (chkDelRawIfJpgNotExist.Checked == true ? 1 : 0).ToString(), iniPath);
+            SetPreviewFolderPath();
+        }
+        #endregion
+
+
+
+
+
+
+        #region Methods
+        private void DeleteDoneItems(ListView listView)
+        {
+            foreach (ListViewItem item in listView.Items)
+            {
+                if (true == item.SubItems[1].Text.Equals("O"))  // 영문자 O 이다. 숫자 0 아님
+                    item.Remove();
+            }
+
+            ReviseIndexNumber(listView);
+        }
+
+        private void DeleteSelectedFileList(ListView listView)
+        {
+            foreach (ListViewItem item in listView.SelectedItems)
+            {
+                item.Remove();
+            }
+
+            foreach (ListViewItem item in listView.CheckedItems)
+            {
+                item.Remove();
+            }
+
+            ReviseIndexNumber(listView);
+        }
+
+        private void MarkingCompleteItem(ListViewItem item)
+        {
+            item.ForeColor = Color.LightGray;
+            item.SubItems[1].Text = "O"; // 영문자 O 이다. 숫자 0 아님
+        }
+
+        private void ProcessFileDelete(List<FileInfo> deleteFileList)
+        {
+            DialogResult answer = MessageBox.Show("주의!!\r\n\r\n[예]를 선택하면 JPG가 존재하지 않는 RAW파일이 삭제됩니다.\r\n[아니오]를 선택하면 [__Delete]폴더로 파일들이 이동 됩니다.\r\n[취소]를 선택하면 아무 작업도 하지 않습니다.\r\n\r\n★주의!!!★ [예]를 선택하면 파일 복구가 불가능합니다. 확실한 경우만 눌러주세요.", "JPG 파일이 없으면 RAW 파일 삭제", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Stop, MessageBoxDefaultButton.Button2);
+
+            // 삭제 처리
+            if (DialogResult.Yes == answer)
+            {
+                foreach (FileInfo file in deleteFileList)
+                    file.Delete();
+            }
+            else if (DialogResult.No == answer) // 파일 이동 처리
+            {
+                foreach (FileInfo file in deleteFileList)
+                {
+                    String delFolder = file.Directory + "\\__Delete";
+                    DirectoryInfo di = Directory.CreateDirectory(delFolder);
+
+                    if (false == di.Exists)
+                        continue;
+
+                    file.MoveTo(delFolder + "\\" + file.Name);
+                }
+            }
+            else // 취소 선택시
+                ; // 아무것도 안함
+        }
+
+        private List<String> GetJpgFileList(ListView listView)
+        {
+            List<String> jpgList = new List<String>();
+
+            foreach (ListViewItem item in listView.Items)
+            {
+                FileInfo fileInfo = new FileInfo(item.SubItems[2].Text);
+                if (true == fileInfo.Extension.ToLower().Equals(".jpg"))
+                    jpgList.Add(fileInfo.FullName);
+            }
+
+            return jpgList;
+        }
+
+        private void DoCategories()
+        {
             if (0 >= fileListView.Items.Count)
             {
                 MessageBox.Show("작업할 파일이 없습니다.");
@@ -124,8 +271,14 @@ namespace Groupic
             int skipCnt = 0;
             FormOverwriteDlg overwriteDlg = new FormOverwriteDlg();
             RawFileList rawFileList = new RawFileList();
+            List<String> jpgFileList = null;
+            List<FileInfo> deleteFileList = new List<FileInfo>();
 
-            foreach(ListViewItem item in fileListView.Items)
+            // [JPG 파일이 없으면 RAW 파일 삭제] 옵션 선택시 RAW파일과 경로 및 파일명 비교를 위해 JPG 파일 리스트를 미리 가져온다
+            if (true == chkDelRawIfJpgNotExist.Checked)
+                jpgFileList = GetJpgFileList(fileListView);
+
+            foreach (ListViewItem item in fileListView.Items)
             {
                 // 이미 작업한 항목은 Skip 한다.
                 if (true == item.SubItems[1].Text.Equals("O"))
@@ -134,12 +287,26 @@ namespace Groupic
                 sourceFilePath = item.SubItems[2].Text;
                 fileInfo = new FileInfo(sourceFilePath);
 
+                // 파일이 존재하지 않으면 skip
                 if (false == fileInfo.Exists)
-                {
                     continue;
+
+                // [JPG 파일이 없으면 RAW 파일 삭제] 옵션 선택시 RAW파일인 경우 삭제 리스트에 넣는다.
+                if (true == chkDelRawIfJpgNotExist.Checked && rawFileList.IsContain(fileInfo.Extension))
+                {
+                    String lookUpName = fileInfo.FullName.Replace(fileInfo.Extension, "") + ".jpg";
+                    String lookResult = jpgFileList.Find(jpg => lookUpName.ToLower().Equals(jpg.ToLower()));
+
+                    if (true == String.IsNullOrEmpty(lookResult))
+                    {
+                        deleteFileList.Add(fileInfo);
+                        MarkingCompleteItem(item);
+                        continue;
+                    }
                 }
 
-
+                // 아래 {}블럭은 작업 완료 후에 더 이상 필요없는 값들이므로{}블럭 처리하여 지역변수로 세팅한 것이다.
+                // 그러면 블럭 이후에는 메모리를 반환되는 장점이 있어 의도적인 처리이다.
                 {
                     StringBuilder destDirectoryName = new StringBuilder(fileInfo.DirectoryName);
                     if (true == chkMakeRoot.Checked)
@@ -198,7 +365,7 @@ namespace Groupic
                     OverwriteResult overWriteResult = OverwriteResult.Cancel;
                     overWriteResult = overwriteDlg.ShowOverwriteDialog(sourceFilePath, destFilePath);
 
-                    switch(overWriteResult)
+                    switch (overWriteResult)
                     {
                         case OverwriteResult.Overwrite: // 덮어쓰기
                             File.Delete(destFilePath);
@@ -213,110 +380,78 @@ namespace Groupic
                             return;
                     }
                 }
-                
+
                 File.Move(sourceFilePath, destFilePath);
                 isDoneWork = true;
-                item.ForeColor = Color.LightGray;
-                item.SubItems[1].Text = "O"; // 영문자 O 이다. 숫자 0 아님
+                MarkingCompleteItem(item);
+
 
                 if (true == chkAutoDeleteDoneItem.Checked)
                     item.Remove();
             } // end of foreach
 
+            // 삭제할 파일이 존재하는 경우에 대한 처리
+            if (0 < deleteFileList.Count)
+            {
+                ProcessFileDelete(deleteFileList);
+            }
+
             if (true == isDoneWork)
-                MessageBox.Show("작업 완료");
-            else if (false == isDoneWork && (skipCnt != fileListView.Items.Count) )
-                MessageBox.Show("이미 작업이 완료된 파일들 입니다.");
+                MessageBox.Show("작업 완료", "Groupic");
+            else if (false == isDoneWork && (skipCnt != fileListView.Items.Count))
+                MessageBox.Show("이미 작업이 완료된 파일들 입니다.", "Groupic");
 
             isDoneWork = false;
         }
 
-        private void btnDeleteAllFileList_Click(object sender, EventArgs e)
+        private void LoadINIOption(String filePath)
         {
-            fileListView.Items.Clear();
-        }
+            StringBuilder optionVal = new StringBuilder();
 
-        private void btnDeleteSelectedFileList_Click(object sender, EventArgs e)
-        {
-            foreach(ListViewItem item in fileListView.SelectedItems)
+            if (true == new FileInfo(filePath).Exists)
             {
-                item.Remove();
+                // 옵션 - Category 폴더 하위에 분류
+                GetPrivateProfileString("OPTION", "DateFormat", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkDateFormat.Checked = true;
+
+                // 옵션 - 4자리 연도 사용
+                GetPrivateProfileString("OPTION", "MakeRoot", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkMakeRoot.Checked = true;
+
+                // 옵션 - "-" 사용
+                GetPrivateProfileString("OPTION", "UseDash", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkUseDash.Checked = true;
+
+                // 옵션 - 월별 분류
+                GetPrivateProfileString("OPTION", "CategoryByMonth", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkCategoryByMonth.Checked = true;
+
+                // 옵션 - 작업 후 완료된 항목 목록에서 자동 삭제
+                GetPrivateProfileString("OPTION", "AutoDeleteDoneItem", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkAutoDeleteDoneItem.Checked = true;
+
+                // 옵션 - RAW 파일을 하위 폴더에 저장
+                GetPrivateProfileString("OPTION", "SeperateRawFile", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkSepertateRawFile.Checked = true;
+
+                // 옵션 - 파일명을 날짜 정보로 변경
+                GetPrivateProfileString("OPTION", "ChangeFileName", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkChangeFileName.Checked = true;
+
+                // 옵션 - JPG 파일이 없으면 RAW 파일 삭제
+                GetPrivateProfileString("OPTION", "DeleteRawIfJpgNotExist", "0", optionVal, 16, iniPath);
+                if ("1" == optionVal.ToString())
+                    chkDelRawIfJpgNotExist.Checked = true;
             }
-
-            foreach (ListViewItem item in fileListView.CheckedItems)
-            {
-                item.Remove();
-            }
-
-            ReviseIndexNumber(fileListView);
         }
 
-        private void btnDeleteDoneItem_Click(object sender, EventArgs e)
-        {
-            foreach (ListViewItem item in fileListView.Items)
-            {
-                if (true == item.SubItems[1].Text.Equals("O"))  // 영문자 O 이다. 숫자 0 아님
-                    item.Remove();
-            }
-
-            ReviseIndexNumber(fileListView);
-        }
-
-        private void chkDateFormat_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "DateFormat", (chkDateFormat.Checked==true?1:0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void chkMakeRoot_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "MakeRoot", (chkMakeRoot.Checked == true ? 1 : 0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void chkUseDash_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "UseDash", (chkUseDash.Checked == true ? 1 : 0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void chkCategoryByMonth_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "CategoryByMonth", (chkCategoryByMonth.Checked == true ? 1 : 0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void chkAutoDeleteDoneItem_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "AutoDeleteDoneItem", (chkAutoDeleteDoneItem.Checked == true ? 1 : 0).ToString(), iniPath);
-        }
-
-        private void chkSepertateRawFile_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "SeperateRawFile", (chkSepertateRawFile.Checked == true ? 1 : 0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void chkChangeFileName_CheckedChanged(object sender, EventArgs e)
-        {
-            WritePrivateProfileString("OPTION", "ChangeFileName", (chkChangeFileName.Checked == true ? 1 : 0).ToString(), iniPath);
-            SetPreviewFolderPath();
-        }
-
-        private void toolStripAbout_Click(object sender, EventArgs e)
-        {
-            FormAbout dlgAbout = new FormAbout();
-            dlgAbout.ShowDialog();
-        }
-
-        private void toolStripQuit_Click(object sender, EventArgs e)
-        {
-            this.Dispose();
-        }
-        #endregion
-
-
-        #region Methods
         private String GetExifDateFileName(string filePath)
         {
             String dateTime = GetExifDate(filePath);
@@ -337,7 +472,7 @@ namespace Groupic
             return dateTime.Trim();
         }
 
-        private void SetExifExtention(List<string> extList)
+        private void GenerateExifExtention(List<string> extList)
         {
             extList.Add(".jpg");
             extList.Add(".jpeg");
@@ -393,7 +528,7 @@ namespace Groupic
                     {
                         foreach (string f in Directory.GetFiles(d))
                         {
-                            addItemToListView(fileListView, f);
+                            AddItemToListView(fileListView, f);
                         }
                         DirSearch(d);
                     }
@@ -401,13 +536,13 @@ namespace Groupic
                     // 루트 디렉토리의 파일 처리
                     foreach (string f in Directory.GetFiles(sDir))
                     {
-                        addItemToListView(fileListView, f);
+                        AddItemToListView(fileListView, f);
                     }
                 }
                 else
                 {
                     // 파일 리스트에 추가
-                    addItemToListView(fileListView, sDir);
+                    AddItemToListView(fileListView, sDir);
                 }
             }
             catch (System.Exception ex)
@@ -416,7 +551,7 @@ namespace Groupic
             }
         }
 
-        private Boolean addItemToListView(ListView listView, String path)
+        private Boolean AddItemToListView(ListView listView, String path)
         {
             if (null != listView.FindItemWithText(path))
             {
@@ -455,8 +590,10 @@ namespace Groupic
                 lvi.SubItems.Add("1 KB");
             else if (1048576 > fileSize)
                 lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1024)) + " KB");
+            else if (1073741824 > fileSize)
+                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1048576)) + " MB");
             else
-                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1024 / 1024)) + " MB");
+                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1073741824)) + " GB");
 
             listView.Items.Add(lvi);
             return true;

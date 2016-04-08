@@ -55,6 +55,7 @@
             this.columnHeaderFilePath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderCreationDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.chkDelRawIfJpgNotExist = new System.Windows.Forms.CheckBox();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -86,7 +87,7 @@
             // 
             this.splitContainer1.Panel2.Controls.Add(this.fileListView);
             this.splitContainer1.Size = new System.Drawing.Size(589, 594);
-            this.splitContainer1.SplitterDistance = 235;
+            this.splitContainer1.SplitterDistance = 250;
             this.splitContainer1.TabIndex = 12;
             this.splitContainer1.TabStop = false;
             // 
@@ -94,12 +95,12 @@
             // 
             this.gbPreview.Controls.Add(this.lbRawPreview);
             this.gbPreview.Controls.Add(this.lbJpegPreview);
-            this.gbPreview.Location = new System.Drawing.Point(12, 157);
+            this.gbPreview.Location = new System.Drawing.Point(12, 177);
             this.gbPreview.Name = "gbPreview";
             this.gbPreview.Size = new System.Drawing.Size(565, 67);
             this.gbPreview.TabIndex = 24;
             this.gbPreview.TabStop = false;
-            this.gbPreview.Text = "미리보기 예시";
+            this.gbPreview.Text = "경로 미리보기";
             // 
             // lbRawPreview
             // 
@@ -148,6 +149,7 @@
             // 
             // gbOption
             // 
+            this.gbOption.Controls.Add(this.chkDelRawIfJpgNotExist);
             this.gbOption.Controls.Add(this.chkChangeFileName);
             this.gbOption.Controls.Add(this.chkSepertateRawFile);
             this.gbOption.Controls.Add(this.chkAutoDeleteDoneItem);
@@ -157,7 +159,7 @@
             this.gbOption.Controls.Add(this.chkMakeRoot);
             this.gbOption.Location = new System.Drawing.Point(111, 30);
             this.gbOption.Name = "gbOption";
-            this.gbOption.Size = new System.Drawing.Size(374, 119);
+            this.gbOption.Size = new System.Drawing.Size(374, 139);
             this.gbOption.TabIndex = 0;
             this.gbOption.TabStop = false;
             this.gbOption.Text = "옵션";
@@ -178,9 +180,9 @@
             this.chkSepertateRawFile.AutoSize = true;
             this.chkSepertateRawFile.Location = new System.Drawing.Point(17, 75);
             this.chkSepertateRawFile.Name = "chkSepertateRawFile";
-            this.chkSepertateRawFile.Size = new System.Drawing.Size(216, 16);
+            this.chkSepertateRawFile.Size = new System.Drawing.Size(186, 16);
             this.chkSepertateRawFile.TabIndex = 21;
-            this.chkSepertateRawFile.Text = "RAW 파일을 하위 RAW 폴더에 저장";
+            this.chkSepertateRawFile.Text = "RAW 파일을 하위 폴더에 저장";
             this.chkSepertateRawFile.UseVisualStyleBackColor = true;
             this.chkSepertateRawFile.CheckedChanged += new System.EventHandler(this.chkSepertateRawFile_CheckedChanged);
             // 
@@ -241,9 +243,9 @@
             // 
             // btnCategorizing
             // 
-            this.btnCategorizing.Location = new System.Drawing.Point(12, 36);
+            this.btnCategorizing.Location = new System.Drawing.Point(12, 46);
             this.btnCategorizing.Name = "btnCategorizing";
-            this.btnCategorizing.Size = new System.Drawing.Size(89, 113);
+            this.btnCategorizing.Size = new System.Drawing.Size(89, 114);
             this.btnCategorizing.TabIndex = 1;
             this.btnCategorizing.Text = "분류시작";
             this.btnCategorizing.UseVisualStyleBackColor = true;
@@ -256,16 +258,16 @@
             this.gbDelete.Controls.Add(this.btnDeleteAllFileList);
             this.gbDelete.Location = new System.Drawing.Point(491, 30);
             this.gbDelete.Name = "gbDelete";
-            this.gbDelete.Size = new System.Drawing.Size(86, 119);
+            this.gbDelete.Size = new System.Drawing.Size(86, 139);
             this.gbDelete.TabIndex = 0;
             this.gbDelete.TabStop = false;
             this.gbDelete.Text = "삭제";
             // 
             // btnDeleteDoneItem
             // 
-            this.btnDeleteDoneItem.Location = new System.Drawing.Point(5, 86);
+            this.btnDeleteDoneItem.Location = new System.Drawing.Point(5, 104);
             this.btnDeleteDoneItem.Name = "btnDeleteDoneItem";
-            this.btnDeleteDoneItem.Size = new System.Drawing.Size(75, 23);
+            this.btnDeleteDoneItem.Size = new System.Drawing.Size(75, 28);
             this.btnDeleteDoneItem.TabIndex = 9;
             this.btnDeleteDoneItem.Text = "완료 삭제";
             this.btnDeleteDoneItem.UseVisualStyleBackColor = true;
@@ -273,9 +275,9 @@
             // 
             // btnDeleteSelectedFileList
             // 
-            this.btnDeleteSelectedFileList.Location = new System.Drawing.Point(5, 53);
+            this.btnDeleteSelectedFileList.Location = new System.Drawing.Point(5, 62);
             this.btnDeleteSelectedFileList.Name = "btnDeleteSelectedFileList";
-            this.btnDeleteSelectedFileList.Size = new System.Drawing.Size(75, 23);
+            this.btnDeleteSelectedFileList.Size = new System.Drawing.Size(75, 28);
             this.btnDeleteSelectedFileList.TabIndex = 8;
             this.btnDeleteSelectedFileList.Text = "선택 삭제";
             this.btnDeleteSelectedFileList.UseVisualStyleBackColor = true;
@@ -285,7 +287,7 @@
             // 
             this.btnDeleteAllFileList.Location = new System.Drawing.Point(5, 20);
             this.btnDeleteAllFileList.Name = "btnDeleteAllFileList";
-            this.btnDeleteAllFileList.Size = new System.Drawing.Size(75, 23);
+            this.btnDeleteAllFileList.Size = new System.Drawing.Size(75, 28);
             this.btnDeleteAllFileList.TabIndex = 7;
             this.btnDeleteAllFileList.Text = "전체 삭제";
             this.btnDeleteAllFileList.UseVisualStyleBackColor = true;
@@ -308,7 +310,7 @@
             this.fileListView.HideSelection = false;
             this.fileListView.Location = new System.Drawing.Point(0, 0);
             this.fileListView.Name = "fileListView";
-            this.fileListView.Size = new System.Drawing.Size(589, 355);
+            this.fileListView.Size = new System.Drawing.Size(589, 340);
             this.fileListView.TabIndex = 11;
             this.fileListView.UseCompatibleStateImageBehavior = false;
             this.fileListView.View = System.Windows.Forms.View.Details;
@@ -340,6 +342,17 @@
             // 
             this.columnHeaderSize.Text = "크기";
             this.columnHeaderSize.Width = 80;
+            // 
+            // chkDelRawIfJpgNotExist
+            // 
+            this.chkDelRawIfJpgNotExist.AutoSize = true;
+            this.chkDelRawIfJpgNotExist.Location = new System.Drawing.Point(17, 113);
+            this.chkDelRawIfJpgNotExist.Name = "chkDelRawIfJpgNotExist";
+            this.chkDelRawIfJpgNotExist.Size = new System.Drawing.Size(213, 16);
+            this.chkDelRawIfJpgNotExist.TabIndex = 23;
+            this.chkDelRawIfJpgNotExist.Text = "JPG 파일이 없으면 RAW 파일 삭제";
+            this.chkDelRawIfJpgNotExist.UseVisualStyleBackColor = true;
+            this.chkDelRawIfJpgNotExist.CheckedChanged += new System.EventHandler(this.chkDelRawIfJpgNotExist_CheckedChanged);
             // 
             // Groupic
             // 
@@ -397,6 +410,7 @@
         private System.Windows.Forms.Label lbJpegPreview;
         private System.Windows.Forms.CheckBox chkChangeFileName;
         private System.Windows.Forms.Label lbRawPreview;
+        private System.Windows.Forms.CheckBox chkDelRawIfJpgNotExist;
     }
 }
 

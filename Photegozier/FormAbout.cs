@@ -25,7 +25,7 @@ namespace Groupic
 
         private void linkBlog_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
-            Process.Start("http://blog.naver.com/tinymin/");
+            Process.Start("http://blog.naver.com/PostList.nhn?blogId=tinymin&from=postList&categoryNo=55");
         }
 
         private void FrmAbout_Load(object sender, EventArgs e)
