@@ -292,16 +292,20 @@ namespace Groupic
                     continue;
 
                 // [JPG 파일이 없으면 RAW 파일 삭제] 옵션 선택시 RAW파일인 경우 삭제 리스트에 넣는다.
-                if (true == chkDelRawIfJpgNotExist.Checked && rawFileList.IsContain(fileInfo.Extension))
+                // 위 옵션을 켰더라도 RAW 파일만 목록에 있는 경우도 있다. 이 때는 RAW파일만 정리가 목적이므로 이 옵션을 수행하지 않는다.
+                if (null != jpgFileList)
                 {
-                    String lookUpName = fileInfo.FullName.Replace(fileInfo.Extension, "") + ".jpg";
-                    String lookResult = jpgFileList.Find(jpg => lookUpName.ToLower().Equals(jpg.ToLower()));
-
-                    if (true == String.IsNullOrEmpty(lookResult))
+                    if (true == chkDelRawIfJpgNotExist.Checked && rawFileList.IsContain(fileInfo.Extension))
                     {
-                        deleteFileList.Add(fileInfo);
-                        MarkingCompleteItem(item);
-                        continue;
+                        String lookUpName = fileInfo.FullName.Replace(fileInfo.Extension, "") + ".jpg";
+                        String lookResult = jpgFileList.Find(jpg => lookUpName.ToLower().Equals(jpg.ToLower()));
+
+                        if (true == String.IsNullOrEmpty(lookResult))
+                        {
+                            deleteFileList.Add(fileInfo);
+                            MarkingCompleteItem(item);
+                            continue;
+                        }
                     }
                 }
 
@@ -352,38 +356,46 @@ namespace Groupic
                 }
 
                 // 대상 파일 경로를 생성.
+                destFilePath = destDirectory.ToString() + "\\";
                 if (true == chkChangeFileName.Checked)
-                    destFilePath = destDirectory.ToString() + "\\" + GetExifDateFileName(sourceFilePath);
+                    destFilePath += GetExifDateFileName(sourceFilePath);
                 else
-                    destFilePath = destDirectory.ToString() + "\\" + fileInfo.Name;
+                    destFilePath += fileInfo.Name;
 
                 destFilePath = destFilePath.Replace("\\\\", "\\");
+                
 
                 // 대상 경로에 동일한 파일이 존재하면 덮어쓰기 다이얼로그를 띄운다.
-                if (true == File.Exists(destFilePath))
+                try
                 {
-                    OverwriteResult overWriteResult = OverwriteResult.Cancel;
-                    overWriteResult = overwriteDlg.ShowOverwriteDialog(sourceFilePath, destFilePath);
-
-                    switch (overWriteResult)
+                    if (true == File.Exists(destFilePath))
                     {
-                        case OverwriteResult.Overwrite: // 덮어쓰기
-                            File.Delete(destFilePath);
-                            break;
-                        case OverwriteResult.NotMove: // 이동 안 함
-                            skipCnt++;
-                            continue;
-                        case OverwriteResult.Rename: // 이름변경하여 이동
-                            destFilePath = GPUtil.GetNewTargetName(destFilePath);
-                            break;
-                        case OverwriteResult.Cancel: //취소
-                            return;
-                    }
-                }
+                        OverwriteResult overWriteResult = OverwriteResult.Cancel;
+                        overWriteResult = overwriteDlg.ShowOverwriteDialog(sourceFilePath, destFilePath);
 
-                File.Move(sourceFilePath, destFilePath);
-                isDoneWork = true;
-                MarkingCompleteItem(item);
+                        switch (overWriteResult)
+                        {
+                            case OverwriteResult.Overwrite: // 덮어쓰기
+                                File.Delete(destFilePath);
+                                break;
+                            case OverwriteResult.NotMove: // 이동 안 함
+                                skipCnt++;
+                                continue;
+                            case OverwriteResult.Rename: // 이름변경하여 이동
+                                destFilePath = GPUtil.GetNewTargetName(destFilePath);
+                                break;
+                            case OverwriteResult.Cancel: //취소
+                                return;
+                        }
+                    }
+
+                    File.Move(sourceFilePath, destFilePath);
+                    isDoneWork = true;
+                    MarkingCompleteItem(item);
+                } catch (IOException ex)
+                {
+                    MessageBox.Show(String.Format("다른 곳에서 파일이 사용 중입니다.\n\n{0}", destFilePath), "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
 
 
                 if (true == chkAutoDeleteDoneItem.Checked)

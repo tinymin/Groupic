@@ -22,14 +22,24 @@ namespace Groupic
         public FormOverwriteDlg()
         {
             InitializeComponent();
+            InitStyle();
         }
 
-        public OverwriteResult ShowOverwriteDialog(String sourceFile, String destFile)
+        private void InitStyle()
         {
-            this.destFile = destFile;
-            this.lblSourceFile.Text = String.Format("{0}{1}", "기존 파일 : ",sourceFile);
-            this.lblTargetName.Text = String.Format("{0}{1}", "이동 할 파일 : ", destFile);
-            this.lblNewName.Text = String.Format("{0}{1}", "변경 될 파일명 : ", GPUtil.GetNewTargetName(destFile));
+            
+        }
+
+        public OverwriteResult ShowOverwriteDialog(String sourceFile, String destFilePath)
+        {
+            this.destFile = destFilePath;
+            this.lblSourceFile.Text = String.Format("{0}{1}", "이동 대상 파일 : ",sourceFile);
+            this.lblTargetName.Text = String.Format("{0}{1}", "기존 파일 : ", destFilePath);
+            this.lblNewName.Text = String.Format("{0}{1}", "변경 될 파일명 : ", GPUtil.GetNewTargetName(destFilePath));
+
+            this.pbThumbOriginal.Image = GPUtil.GetThumbNail(sourceFile, 150, 100);
+            this.pbThumbNew.Image = GPUtil.GetThumbNail(destFilePath, 150, 100);
+
             return ShowOverwriteDialog();
         }
 
