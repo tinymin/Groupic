@@ -503,7 +503,7 @@ namespace Groupic
 
         private String GetExifDateFileName(string filePath)
         {
-            String dateTime = GetExifDate(filePath);
+            String dateTime = GPUtil.GetExifDate(filePath);
             FileInfo fi = new FileInfo(filePath);
 
             if (true == String.IsNullOrEmpty(dateTime)) // Exif 정보가 없는 경우
