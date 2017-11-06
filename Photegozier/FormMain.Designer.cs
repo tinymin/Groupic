@@ -37,6 +37,7 @@
             this.toolStripQuit = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.gbOption = new System.Windows.Forms.GroupBox();
+            this.chkDelRawIfJpgNotExist = new System.Windows.Forms.CheckBox();
             this.chkChangeFileName = new System.Windows.Forms.CheckBox();
             this.chkSepertateRawFile = new System.Windows.Forms.CheckBox();
             this.chkAutoDeleteDoneItem = new System.Windows.Forms.CheckBox();
@@ -55,7 +56,8 @@
             this.columnHeaderFilePath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderCreationDate = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeaderSize = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.chkDelRawIfJpgNotExist = new System.Windows.Forms.CheckBox();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
             ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
             this.splitContainer1.Panel1.SuspendLayout();
             this.splitContainer1.Panel2.SuspendLayout();
@@ -64,6 +66,7 @@
             this.menuStrip1.SuspendLayout();
             this.gbOption.SuspendLayout();
             this.gbDelete.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // splitContainer1
@@ -86,6 +89,7 @@
             // splitContainer1.Panel2
             // 
             this.splitContainer1.Panel2.Controls.Add(this.fileListView);
+            this.splitContainer1.Panel2.Padding = new System.Windows.Forms.Padding(0, 0, 0, 22);
             this.splitContainer1.Size = new System.Drawing.Size(589, 594);
             this.splitContainer1.SplitterDistance = 250;
             this.splitContainer1.TabIndex = 12;
@@ -163,6 +167,17 @@
             this.gbOption.TabIndex = 0;
             this.gbOption.TabStop = false;
             this.gbOption.Text = "옵션";
+            // 
+            // chkDelRawIfJpgNotExist
+            // 
+            this.chkDelRawIfJpgNotExist.AutoSize = true;
+            this.chkDelRawIfJpgNotExist.Location = new System.Drawing.Point(17, 113);
+            this.chkDelRawIfJpgNotExist.Name = "chkDelRawIfJpgNotExist";
+            this.chkDelRawIfJpgNotExist.Size = new System.Drawing.Size(213, 16);
+            this.chkDelRawIfJpgNotExist.TabIndex = 23;
+            this.chkDelRawIfJpgNotExist.Text = "JPG 파일이 없으면 RAW 파일 삭제";
+            this.chkDelRawIfJpgNotExist.UseVisualStyleBackColor = true;
+            this.chkDelRawIfJpgNotExist.CheckedChanged += new System.EventHandler(this.chkDelRawIfJpgNotExist_CheckedChanged);
             // 
             // chkChangeFileName
             // 
@@ -309,8 +324,9 @@
             this.fileListView.GridLines = true;
             this.fileListView.HideSelection = false;
             this.fileListView.Location = new System.Drawing.Point(0, 0);
+            this.fileListView.Margin = new System.Windows.Forms.Padding(3, 3, 3, 22);
             this.fileListView.Name = "fileListView";
-            this.fileListView.Size = new System.Drawing.Size(589, 340);
+            this.fileListView.Size = new System.Drawing.Size(589, 318);
             this.fileListView.TabIndex = 11;
             this.fileListView.UseCompatibleStateImageBehavior = false;
             this.fileListView.View = System.Windows.Forms.View.Details;
@@ -343,16 +359,21 @@
             this.columnHeaderSize.Text = "크기";
             this.columnHeaderSize.Width = 80;
             // 
-            // chkDelRawIfJpgNotExist
+            // statusStrip1
             // 
-            this.chkDelRawIfJpgNotExist.AutoSize = true;
-            this.chkDelRawIfJpgNotExist.Location = new System.Drawing.Point(17, 113);
-            this.chkDelRawIfJpgNotExist.Name = "chkDelRawIfJpgNotExist";
-            this.chkDelRawIfJpgNotExist.Size = new System.Drawing.Size(213, 16);
-            this.chkDelRawIfJpgNotExist.TabIndex = 23;
-            this.chkDelRawIfJpgNotExist.Text = "JPG 파일이 없으면 RAW 파일 삭제";
-            this.chkDelRawIfJpgNotExist.UseVisualStyleBackColor = true;
-            this.chkDelRawIfJpgNotExist.CheckedChanged += new System.EventHandler(this.chkDelRawIfJpgNotExist_CheckedChanged);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripProgressBar1});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 572);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.RenderMode = System.Windows.Forms.ToolStripRenderMode.Professional;
+            this.statusStrip1.Size = new System.Drawing.Size(589, 22);
+            this.statusStrip1.TabIndex = 14;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // toolStripProgressBar1
+            // 
+            this.toolStripProgressBar1.Name = "toolStripProgressBar1";
+            this.toolStripProgressBar1.Size = new System.Drawing.Size(100, 16);
             // 
             // Groupic
             // 
@@ -361,6 +382,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.ControlLightLight;
             this.ClientSize = new System.Drawing.Size(589, 594);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.splitContainer1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Groupic";
@@ -378,7 +400,10 @@
             this.gbOption.ResumeLayout(false);
             this.gbOption.PerformLayout();
             this.gbDelete.ResumeLayout(false);
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -411,6 +436,8 @@
         private System.Windows.Forms.CheckBox chkChangeFileName;
         private System.Windows.Forms.Label lbRawPreview;
         private System.Windows.Forms.CheckBox chkDelRawIfJpgNotExist;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
     }
 }
 

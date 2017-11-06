@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExifLib;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Dynamic;
@@ -13,6 +14,34 @@ namespace Groupic
 {
     class GPUtil
     {
+        public static String GetExifDate(string path)
+        {
+            String strDate;
+
+            try
+            {
+                ExifReader exifData = new ExifReader(path);
+                exifData.GetTagValue(ExifTags.DateTimeOriginal, out strDate);
+                exifData.Dispose(); // Close file
+            }
+            catch (ExifLibException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return String.Empty;
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.ToString());
+                return String.Empty;
+            }
+
+            if (null == strDate || String.Empty == strDate)
+                return String.Empty;
+
+            strDate = strDate.Replace(":", "-");
+            return strDate;
+        }
+
         public static String GetNewTargetName(String targetFile)
         {
             String path = Path.GetDirectoryName(targetFile);

@@ -12,10 +12,15 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
+using static System.Windows.Forms.ListView;
 
 namespace Groupic
 {
+    delegate void SetToolStripProgressBarValueCallback(int value);
+    delegate void SetListViewItemsCallback(List<ListViewItem> listViewItems);
+
     public partial class Groupic : Form
     {
         #region DllImport
@@ -43,9 +48,11 @@ namespace Groupic
 
         #region Data
         private String iniPath = ".\\setting.ini";
-        private List<String> exifExtentionList = new List<String>();
+        private Counter counter = new Counter();
+        private List<ListViewItem> listViewItems = new List<ListViewItem>();
+        private WorkItems workItems = new WorkItems();
         #endregion
-        
+
 
 
 
@@ -55,7 +62,6 @@ namespace Groupic
         public Groupic()
         {
             InitializeComponent();
-            GenerateExifExtention(exifExtentionList);
         }
         #endregion
         
@@ -73,6 +79,8 @@ namespace Groupic
             fileListView.GridLines = true;
             fileListView.AllowDrop = true;
 
+            workItems.ProgressBar += new SetToolStripProgressBarValueCallback(SetToolStripProgressBarValue);
+
             // INI에서 옵션 로드
             LoadINIOption(iniPath);
             
@@ -86,7 +94,8 @@ namespace Groupic
 
         private void fileListView_DragDrop(object sender, DragEventArgs e)
         {
-            DragDropThreadFunc(e);
+            Thread thread = new Thread(() => DragDropThreadFunc(e));
+            thread.Start();
         }
 
         private void btnCategorizing_Click(object sender, EventArgs e)
@@ -181,6 +190,34 @@ namespace Groupic
 
 
         #region Methods
+        private void SetListViewItems(List<ListViewItem> listViewItems)
+        {
+            if (true == this.fileListView.InvokeRequired)
+            {
+                SetListViewItemsCallback d = new SetListViewItemsCallback(SetListViewItems);
+                this.Invoke(d, new object[] { listViewItems });
+            }
+            else
+            {
+                this.fileListView.Items.Clear();
+                this.fileListView.Items.AddRange(listViewItems.ToArray());
+            }
+            
+        }
+
+        private void SetToolStripProgressBarValue(int value)
+        {
+            if (true == this.toolStripProgressBar1.GetCurrentParent().InvokeRequired)
+            {
+                SetToolStripProgressBarValueCallback d = new SetToolStripProgressBarValueCallback(SetToolStripProgressBarValue);
+                this.Invoke(d, new object[] { value });
+            }
+            else
+            {
+                this.toolStripProgressBar1.Value = value;
+            }
+        }
+
         private void DeleteDoneItems(ListView listView)
         {
             foreach (ListViewItem item in listView.Items)
@@ -484,15 +521,6 @@ namespace Groupic
             return dateTime.Trim();
         }
 
-        private void GenerateExifExtention(List<string> extList)
-        {
-            extList.Add(".jpg");
-            extList.Add(".jpeg");
-            extList.Add(".tiff");
-            extList.Add(".riff");
-            extList.Add(".wav");
-        }
-
         private void SetProgramTitle()
         {
             Version ver = Assembly.GetExecutingAssembly().GetName().Version; // 현재 실행되는 어셈블리..dll의 버전 가져오기
@@ -516,139 +544,28 @@ namespace Groupic
             }
         }
 
+        private void SetToolStripProgressBar(int value)
+        {
+            toolStripProgressBar1.Value = value;
+        }
+
         private void DragDropThreadFunc(DragEventArgs e)
         {
+            counter.reset();
+
             String[] files;
             files = (String[])e.Data.GetData(DataFormats.FileDrop);
+            counter.CalcurateTotalCount(files);
+            workItems.IndexingFiles(files);
 
-            foreach (String file in files)
+            if (false == workItems.IsSameList())
             {
-                DirSearch(file);
+                listViewItems = workItems.ToList();
             }
+
+            SetListViewItems(listViewItems);
         }
 
-        void DirSearch(string sDir)
-        {
-            try
-            {
-                FileAttributes attr = File.GetAttributes(sDir);
-
-                if ((attr & FileAttributes.Directory) == FileAttributes.Directory)
-                {
-                    // 디렉토리 탐색
-                    foreach (string d in Directory.GetDirectories(sDir))
-                    {
-                        foreach (string f in Directory.GetFiles(d))
-                        {
-                            AddItemToListView(fileListView, f);
-                        }
-                        DirSearch(d);
-                    }
-
-                    // 루트 디렉토리의 파일 처리
-                    foreach (string f in Directory.GetFiles(sDir))
-                    {
-                        AddItemToListView(fileListView, f);
-                    }
-                }
-                else
-                {
-                    // 파일 리스트에 추가
-                    AddItemToListView(fileListView, sDir);
-                }
-            }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-        }
-
-        private Boolean AddItemToListView(ListView listView, String path)
-        {
-            if (null != listView.FindItemWithText(path))
-            {
-                return false;
-            }
-
-            ListViewItem lvi = new ListViewItem((listView.Items.Count + 1).ToString());
-
-            lvi.SubItems.Add(""); // 완료 여부 컬럼 - 처음에는 빈칸을 넣는다.
-            lvi.SubItems.Add(path); //파일 경로
-
-            // 기본적으로 파일 생성날짜를 읽어온다.
-            // Exif가 존재한다면 아래 로직에서 Exif에서 생성된 날짜를 읽어온다.
-            FileInfo fileInfo = new FileInfo(path);
-            String fileCreationTime = fileInfo.LastWriteTime.Date.ToString("yyyy-MM-dd").Substring(0, 10);
-
-            // Exif 지원 확장자인 경우 Exif에서 생성된 날짜를 읽어온다.
-            if (true == IsExifSupportExtension(path))
-            {
-                 String exifDate = GetExifDate(path);
-
-                if (false == String.IsNullOrEmpty(exifDate))
-                {
-                    exifDate = exifDate.Substring(0, 10);
-                    fileCreationTime = exifDate;
-                }
-            }
-
-            lvi.SubItems.Add(fileCreationTime); // 생성 날짜
-
-            long fileSize = fileInfo.Length;
-            // 파일 크기
-            if (0 == fileSize)
-                lvi.SubItems.Add("0 KB");
-            else if (1024 > fileSize)
-                lvi.SubItems.Add("1 KB");
-            else if (1048576 > fileSize)
-                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1024)) + " KB");
-            else if (1073741824 > fileSize)
-                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1048576)) + " MB");
-            else
-                lvi.SubItems.Add(String.Format("{0:N}", (double)(fileSize / 1073741824)) + " GB");
-
-            listView.Items.Add(lvi);
-            return true;
-        }
-
-        private String GetExifDate(string path)
-        {
-            String strDate;
-
-            try
-            {
-                ExifReader exifData = new ExifReader(path);
-                exifData.GetTagValue(ExifTags.DateTimeOriginal, out strDate);
-                exifData.Dispose(); // Close file
-            }
-            catch (ExifLibException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return String.Empty;
-            }
-            catch(FileNotFoundException ex)
-            {
-                Console.WriteLine(ex.ToString());
-                return String.Empty;
-            }
-
-            if (null == strDate || String.Empty == strDate)
-                return String.Empty;
-
-            strDate = strDate.Replace(":", "-");
-            return strDate;
-        }
-
-        private bool IsExifSupportExtension(string path)
-        {
-            String fileExt = Path.GetExtension(path);
-
-            if (true == String.IsNullOrEmpty(fileExt))
-                return false;
-
-            return exifExtentionList.Contains(fileExt.ToLower());
-        }
-        
         // 리스트뷰의 인덱스번호를 새로 보정한다.
         private void ReviseIndexNumber(ListView listView)
         {
