@@ -29,6 +29,11 @@ namespace Groupic
             return currentCount == prevCount;
         }
 
+        internal void removeItem(string key)
+        {
+            setListViewItems.Remove(key);
+        }
+
         internal void IndexingFiles(String[] files)
         {
             prevCount = setListViewItems.Count;

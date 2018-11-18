@@ -429,6 +429,7 @@ namespace Groupic
                     File.Move(sourceFilePath, destFilePath);
                     isDoneWork = true;
                     MarkingCompleteItem(item);
+                    workItems.removeItem(sourceFilePath);
                 } catch (IOException ex)
                 {
                     MessageBox.Show(String.Format("다른 곳에서 파일이 사용 중입니다.\n\n{0}", destFilePath), "오류", MessageBoxButtons.OK, MessageBoxIcon.Error);
